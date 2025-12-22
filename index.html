@@ -170,6 +170,13 @@
     <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
     
     <script>
+        // Vehicle type to price ID mapping
+        const VEHICLE_PRICES = {
+            'hatchback': 'pri_01kd35nbdz3vjvbtgf9h7z7ety',
+            'sedan': 'pri_01kd35pt28hd1vwvb4wvjnxe96',
+            '4x4': 'pri_01kd35rnwv0sssf6sqfbz1spn3'
+        };
+
         // Initialize Paddle with your client-side token
         if (typeof Paddle !== 'undefined') {
             Paddle.Initialize({
@@ -186,12 +193,15 @@
         }
 
         // Paddle Checkout Function
-        function openPaddleCheckout(vin, plate, state) {
+        function openPaddleCheckout(vin, plate, vehicleType) {
             if (typeof Paddle === 'undefined') {
                 console.error('Paddle is not loaded');
                 alert('Payment system is loading, please try again.');
                 return;
             }
+
+            // Get the appropriate price ID based on vehicle type
+            var priceId = VEHICLE_PRICES[vehicleType] || VEHICLE_PRICES['sedan']; // default to sedan
 
             // Prepare custom data based on what was provided
             var customData = {};
@@ -199,23 +209,20 @@
             if (vin) {
                 customData.vin = vin;
                 customData.search_type = 'vin';
-            } else if (plate && state) {
-                customData.license_plate = plate;
-                customData.state = state;
-                customData.search_type = 'plate';
             } else if (plate) {
                 customData.license_plate = plate;
                 customData.search_type = 'plate';
             }
             
-            // Add timestamp for tracking
+            // Add vehicle type and timestamp for tracking
+            customData.vehicle_type = vehicleType || 'sedan';
             customData.search_timestamp = new Date().toISOString();
 
             // Open Paddle checkout with your product ID
             Paddle.Checkout.open({
                 items: [
                     {
-                        priceId: 'pri_01kcyhfsw4f552f0th25a3726a',
+                        priceId: priceId,
                         quantity: 1
                     }
                 ],
@@ -247,7 +254,7 @@
             let form = btn.closest('form');
             
             // Get VIN from the form
-            let vinInput = btn.closest('div').querySelector('input');
+            let vinInput = form.querySelector('input[name="vin"]');
             let vin = vinInput ? vinInput.value : '';
             
             if (!vin) {
@@ -255,8 +262,12 @@
                 return;
             }
 
-            // Open Paddle Checkout instead of redirecting - send VIN
-            openPaddleCheckout(vin, null, null);
+            // Get vehicle type from the form
+            let vehicleTypeSelect = form.querySelector('select[name="vehicle_type"]');
+            let vehicleType = vehicleTypeSelect ? vehicleTypeSelect.value : 'sedan';
+
+            // Open Paddle Checkout instead of redirecting - send VIN and vehicle type
+            openPaddleCheckout(vin, null, vehicleType);
             return;
 
             // Old code below (kept as fallback)
@@ -560,6 +571,14 @@
     <div class="tab-content">
         <div id="checkVinPanelpromo" class="tab-pane show active" role="tabpanel" aria-labelledby="checkVinTabpromo">
             <form class="find-vin__form find-vin__form--vin" action="/check-vin-number-and-get-the-vehicle-history-report/checkout">
+                <div style="margin-bottom: 15px;">
+                    <label for="vehicle-type-promo" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark-grey);">Select Vehicle Type:</label>
+                    <select id="vehicle-type-promo" name="vehicle_type" style="width: 100%; padding: 12px 15px; border: 1px solid var(--light-grey); border-radius: 10px; font-size: 15px; background-color: var(--basic-white); outline: none; cursor: pointer;">
+                        <option value="hatchback">Hatchback</option>
+                        <option value="sedan" selected>Sedan</option>
+                        <option value="4x4">4x4</option>
+                    </select>
+                </div>
                 <div class="find-vin__group find-vin__group--vin">
                     <span class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--vin" data-toggle="tooltip" data-bs-trigger="manual" data-placement="bottom" title="Please, ensure that your VIN is in proper format. 5 - 17 digits">
                     </span>
@@ -577,14 +596,18 @@
         </div>
         <div id="checkPlatePanelpromo" class="tab-pane " role="tabpanel" aria-labelledby="checkPlateTabpromo">
             <form class="find-vin__form find-vin__form--plate">
+                <div style="margin-bottom: 15px;">
+                    <label for="vehicle-type-plate-promo" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark-grey);">Select Vehicle Type:</label>
+                    <select id="vehicle-type-plate-promo" name="vehicle_type" style="width: 100%; padding: 12px 15px; border: 1px solid var(--light-grey); border-radius: 10px; font-size: 15px; background-color: var(--basic-white); outline: none; cursor: pointer;">
+                        <option value="hatchback">Hatchback</option>
+                        <option value="sedan" selected>Sedan</option>
+                        <option value="4x4">4x4</option>
+                    </select>
+                </div>
                 <div class="find-vin__group find-vin__group--plate">
                     <span data-toggle="tooltip" data-bs-trigger="manual" class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--plate" data-placement="bottom" title="The plate field is required."></span>
-                    <span data-toggle="tooltip" data-bs-trigger="manual" class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--state" data-placement="bottom" title="The state field is required."></span>
                     <span data-toggle="tooltip" data-bs-trigger="manual" class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--error" data-placement="bottom" title=""></span>
-                    <input name="plate" type="text" class="plate-input find-vin__input" placeholder="License Plate" id="plateNumberpromo">
-                    <div class="find-vin__field">
-                        <select id="stateCode" class="plate-code-input find-vin__select" name="state"><option selected="selected" value="">State</option><option value="al">Alabama</option><option value="ak">Alaska</option><option value="az">Arizona</option><option value="ar">Arkansas</option><option value="ca">California</option><option value="co">Colorado</option><option value="ct">Connecticut</option><option value="de">Delaware</option><option value="dc">District Of Columbia</option><option value="fl">Florida</option><option value="ga">Georgia</option><option value="hi">Hawaii</option><option value="id">Idaho</option><option value="il">Illinois</option><option value="in">Indiana</option><option value="ia">Iowa</option><option value="ks">Kansas</option><option value="ky">Kentucky</option><option value="la">Louisiana</option><option value="me">Maine</option><option value="md">Maryland</option><option value="ma">Massachusetts</option><option value="mi">Michigan</option><option value="mn">Minnesota</option><option value="ms">Mississippi</option><option value="mo">Missouri</option><option value="mt">Montana</option><option value="ne">Nebraska</option><option value="nv">Nevada</option><option value="nh">New Hampshire</option><option value="nj">New Jersey</option><option value="nm">New Mexico</option><option value="ny">New York</option><option value="nc">North Carolina</option><option value="nd">North Dakota</option><option value="oh">Ohio</option><option value="ok">Oklahoma</option><option value="or">Oregon</option><option value="pa">Pennsylvania</option><option value="ri">Rhode Island</option><option value="sc">South Carolina</option><option value="sd">South Dakota</option><option value="tn">Tennessee</option><option value="tx">Texas</option><option value="ut">Utah</option><option value="vt">Vermont</option><option value="va">Virginia</option><option value="wa">Washington</option><option value="wv">West Virginia</option><option value="wi">Wisconsin</option><option value="wy">Wyoming</option></select>
-                    </div>
+                    <input name="plate" type="text" class="plate-input find-vin__input" placeholder="Enter License Plate Number" id="plateNumberpromo">
                 </div>
                 <button type="submit" class="btn-reset button button--accent find-vin__plate-btn">
                         Check Plate
@@ -1470,6 +1493,14 @@ registration card or insurance documents.
     <div class="tab-content">
         <div id="checkVinPanelbanner" class="tab-pane show active" role="tabpanel" aria-labelledby="checkVinTabbanner">
             <form class="find-vin__form find-vin__form--vin" action="/check-vin-number-and-get-the-vehicle-history-report/checkout">
+                <div style="margin-bottom: 15px;">
+                    <label for="vehicle-type-banner" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark-grey);">Select Vehicle Type:</label>
+                    <select id="vehicle-type-banner" name="vehicle_type" style="width: 100%; padding: 12px 15px; border: 1px solid var(--light-grey); border-radius: 10px; font-size: 15px; background-color: var(--basic-white); outline: none; cursor: pointer;">
+                        <option value="hatchback">Hatchback</option>
+                        <option value="sedan" selected>Sedan</option>
+                        <option value="4x4">4x4</option>
+                    </select>
+                </div>
                 <div class="find-vin__group find-vin__group--vin">
                     <span class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--vin" data-toggle="tooltip" data-bs-trigger="manual" data-placement="bottom" title="Please, ensure that your VIN is in proper format. 5 - 17 digits">
                     </span>
@@ -1487,14 +1518,18 @@ registration card or insurance documents.
         </div>
         <div id="checkPlatePanelbanner" class="tab-pane " role="tabpanel" aria-labelledby="checkPlateTabbanner">
             <form class="find-vin__form find-vin__form--plate">
+                <div style="margin-bottom: 15px;">
+                    <label for="vehicle-type-plate-banner" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--dark-grey);">Select Vehicle Type:</label>
+                    <select id="vehicle-type-plate-banner" name="vehicle_type" style="width: 100%; padding: 12px 15px; border: 1px solid var(--light-grey); border-radius: 10px; font-size: 15px; background-color: var(--basic-white); outline: none; cursor: pointer;">
+                        <option value="hatchback">Hatchback</option>
+                        <option value="sedan" selected>Sedan</option>
+                        <option value="4x4">4x4</option>
+                    </select>
+                </div>
                 <div class="find-vin__group find-vin__group--plate">
                     <span data-toggle="tooltip" data-bs-trigger="manual" class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--plate" data-placement="bottom" title="The plate field is required."></span>
-                    <span data-toggle="tooltip" data-bs-trigger="manual" class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--state" data-placement="bottom" title="The state field is required."></span>
                     <span data-toggle="tooltip" data-bs-trigger="manual" class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--error" data-placement="bottom" title=""></span>
-                    <input name="plate" type="text" class="plate-input find-vin__input" placeholder="License Plate" id="plateNumberbanner">
-                    <div class="find-vin__field">
-                        <select id="stateCode" class="plate-code-input find-vin__select" name="state"><option selected="selected" value="">State</option><option value="al">Alabama</option><option value="ak">Alaska</option><option value="az">Arizona</option><option value="ar">Arkansas</option><option value="ca">California</option><option value="co">Colorado</option><option value="ct">Connecticut</option><option value="de">Delaware</option><option value="dc">District Of Columbia</option><option value="fl">Florida</option><option value="ga">Georgia</option><option value="hi">Hawaii</option><option value="id">Idaho</option><option value="il">Illinois</option><option value="in">Indiana</option><option value="ia">Iowa</option><option value="ks">Kansas</option><option value="ky">Kentucky</option><option value="la">Louisiana</option><option value="me">Maine</option><option value="md">Maryland</option><option value="ma">Massachusetts</option><option value="mi">Michigan</option><option value="mn">Minnesota</option><option value="ms">Mississippi</option><option value="mo">Missouri</option><option value="mt">Montana</option><option value="ne">Nebraska</option><option value="nv">Nevada</option><option value="nh">New Hampshire</option><option value="nj">New Jersey</option><option value="nm">New Mexico</option><option value="ny">New York</option><option value="nc">North Carolina</option><option value="nd">North Dakota</option><option value="oh">Ohio</option><option value="ok">Oklahoma</option><option value="or">Oregon</option><option value="pa">Pennsylvania</option><option value="ri">Rhode Island</option><option value="sc">South Carolina</option><option value="sd">South Dakota</option><option value="tn">Tennessee</option><option value="tx">Texas</option><option value="ut">Utah</option><option value="vt">Vermont</option><option value="va">Virginia</option><option value="wa">Washington</option><option value="wv">West Virginia</option><option value="wi">Wisconsin</option><option value="wy">Wyoming</option></select>
-                    </div>
+                    <input name="plate" type="text" class="plate-input find-vin__input" placeholder="Enter License Plate Number" id="plateNumberbanner">
                 </div>
                 <button type="submit" class="btn-reset button button--accent find-vin__plate-btn">
                         Check Plate
@@ -1960,8 +1995,12 @@ registration card or insurance documents.
                             return false;
                         }
                         
-                        // Open Paddle Checkout with VIN
-                        openPaddleCheckout(vin, null, null);
+                        // Get vehicle type from the form
+                        var vehicleTypeSelect = form.querySelector('select[name="vehicle_type"]');
+                        var vehicleType = vehicleTypeSelect ? vehicleTypeSelect.value : 'sedan';
+                        
+                        // Open Paddle Checkout with VIN and vehicle type
+                        openPaddleCheckout(vin, null, vehicleType);
                         return false;
                     });
                 });
@@ -1974,31 +2013,26 @@ registration card or insurance documents.
                         e.preventDefault();
                         e.stopPropagation();
                         
-                        // Get plate and state values
+                        // Get plate value and vehicle type
                         var plateInput = form.querySelector('input[name="plate"]');
-                        var stateSelect = form.querySelector('select[name="state"]');
+                        var vehicleTypeSelect = form.querySelector('select[name="vehicle_type"]');
                         
                         var plate = plateInput ? plateInput.value.trim() : '';
-                        var state = stateSelect ? stateSelect.value : '';
+                        var vehicleType = vehicleTypeSelect ? vehicleTypeSelect.value : 'sedan';
                         
-                        if (!plate || !state) {
+                        if (!plate) {
                             // Show validation error
                             var plateTooltip = form.querySelector('.vin-form-tooltip--plate');
-                            var stateTooltip = form.querySelector('.vin-form-tooltip--state');
                             
-                            if (!plate && plateTooltip) {
+                            if (plateTooltip) {
                                 plateTooltip.style.display = 'block';
                                 setTimeout(function() { plateTooltip.style.display = 'none'; }, 3000);
-                            }
-                            if (!state && stateTooltip) {
-                                stateTooltip.style.display = 'block';
-                                setTimeout(function() { stateTooltip.style.display = 'none'; }, 3000);
                             }
                             return false;
                         }
                         
-                        // Open Paddle Checkout with plate and state
-                        openPaddleCheckout(null, plate, state);
+                        // Open Paddle Checkout with plate and vehicle type
+                        openPaddleCheckout(null, plate, vehicleType);
                         return false;
                     });
                 });
