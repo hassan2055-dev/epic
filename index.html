@@ -192,13 +192,61 @@
             });
         }
 
+        // Cloudflare Worker URL - UPDATE THIS WITH YOUR ACTUAL WORKER URL
+        const WORKER_URL = 'https://cold-hat-5fd3.rmoto7817.workers.dev/';
+
+        // Function to send form data to Cloudflare Worker (email notification)
+        async function sendFormDataToEmail(vin, plate, state, vehicleType, searchType) {
+            try {
+                const formData = {
+                    vin: vin || null,
+                    plate: plate || null,
+                    state: state || null,
+                    vehicleType: vehicleType || 'sedan',
+                    searchType: searchType || 'vin',
+                    timestamp: new Date().toISOString()
+                };
+
+                // Send data to Cloudflare Worker
+                await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                console.log('Form data sent to email successfully');
+            } catch (error) {
+                // Log error but don't block the checkout process
+                console.error('Error sending form data:', error);
+            }
+        }
+
         // Paddle Checkout Function
-        function openPaddleCheckout(vin, plate, vehicleType) {
+        async function openPaddleCheckout(vin, plate, vehicleType) {
             if (typeof Paddle === 'undefined') {
                 console.error('Paddle is not loaded');
                 alert('Payment system is loading, please try again.');
                 return;
             }
+
+            // Determine search type and get state if it's a plate search
+            let searchType = vin ? 'vin' : 'plate';
+            let state = null;
+            
+            // Try to get state from the form if it's a plate search
+            if (plate) {
+                // Find the active form
+                let activeForm = document.querySelector('.find-vin__form:not([style*="display: none"])');
+                if (activeForm) {
+                    let stateSelect = activeForm.querySelector('select[name="state"]');
+                    state = stateSelect ? stateSelect.value : null;
+                }
+            }
+
+            // Send form data to email via Cloudflare Worker BEFORE opening checkout
+            await sendFormDataToEmail(vin, plate, state, vehicleType, searchType);
 
             // Get the appropriate price ID based on vehicle type
             var priceId = VEHICLE_PRICES[vehicleType] || VEHICLE_PRICES['sedan']; // default to sedan
@@ -212,6 +260,9 @@
             } else if (plate) {
                 customData.license_plate = plate;
                 customData.search_type = 'plate';
+                if (state) {
+                    customData.state = state;
+                }
             }
             
             // Add vehicle type and timestamp for tracking
@@ -249,7 +300,7 @@
             btn.removeAttribute('disabled');
         }
 
-        function startSubmit(e, btn) {
+        async function startSubmit(e, btn) {
             e.preventDefault();
             let form = btn.closest('form');
             
@@ -257,8 +308,12 @@
             let vinInput = form.querySelector('input[name="vin"]');
             let vin = vinInput ? vinInput.value : '';
             
-            if (!vin) {
-                // Show validation error if VIN is empty
+            // Get Plate from the form
+            let plateInput = form.querySelector('input[name="plate"]');
+            let plate = plateInput ? plateInput.value : '';
+            
+            if (!vin && !plate) {
+                // Show validation error if both VIN and Plate are empty
                 return;
             }
 
@@ -266,8 +321,8 @@
             let vehicleTypeSelect = form.querySelector('select[name="vehicle_type"]');
             let vehicleType = vehicleTypeSelect ? vehicleTypeSelect.value : 'sedan';
 
-            // Open Paddle Checkout instead of redirecting - send VIN and vehicle type
-            openPaddleCheckout(vin, null, vehicleType);
+            // Open Paddle Checkout - send VIN/Plate and vehicle type
+            await openPaddleCheckout(vin, plate, vehicleType);
             return;
 
             // Old code below (kept as fallback)
