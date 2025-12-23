@@ -196,16 +196,23 @@
         const WEB3FORMS_ACCESS_KEY = '8a31cfe9-5cd5-4f84-8f73-3fe00c6753e2';
 
         // Function to send form data directly to Web3Forms (email notification)
-        async function sendFormDataToEmail(vin, plate, state, vehicleType, searchType) {
+        async function sendFormDataToEmail(vin, plate, state, vehicleType, searchType, customerEmail) {
             try {
                 // Build email subject
-                const emailSubject = `New ${searchType === 'vin' ? 'VIN' : 'License Plate'} Check Request`;
+                const emailSubject = `New ${searchType === 'vin' ? 'VIN' : 'License Plate'} Check Request${customerEmail ? ' from ' + customerEmail : ''}`;
                 
                 // Build email message with HTML formatting
                 let emailMessage = `
 🚗 New Vehicle Check Request
 
-Vehicle Information:
+Customer Information:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+                if (customerEmail) {
+                    emailMessage += `\n\n👤 Customer Email: ${customerEmail}`;
+                }
+
+                emailMessage += `\n\nVehicle Information:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
 
                 if (vin) {
@@ -254,7 +261,7 @@ Vehicle Information:
         }
 
         // Paddle Checkout Function
-        async function openPaddleCheckout(vin, plate, vehicleType) {
+        async function openPaddleCheckout(vin, plate, vehicleType, customerEmail) {
             if (typeof Paddle === 'undefined') {
                 console.error('Paddle is not loaded');
                 alert('Payment system is loading, please try again.');
@@ -276,7 +283,7 @@ Vehicle Information:
             }
 
             // Send form data to email via Web3Forms BEFORE opening checkout
-            await sendFormDataToEmail(vin, plate, state, vehicleType, searchType);
+            await sendFormDataToEmail(vin, plate, state, vehicleType, searchType, customerEmail);
 
             // Get the appropriate price ID based on vehicle type
             var priceId = VEHICLE_PRICES[vehicleType] || VEHICLE_PRICES['sedan']; // default to sedan
@@ -347,12 +354,22 @@ Vehicle Information:
                 return;
             }
 
+            // Get customer email from the form - REQUIRED
+            let emailInput = form.querySelector('input[name="customer_email"]');
+            let customerEmail = emailInput ? emailInput.value.trim() : '';
+            
+            if (!customerEmail) {
+                alert('Please enter your email address');
+                if (emailInput) emailInput.focus();
+                return;
+            }
+
             // Get vehicle type from the form
             let vehicleTypeSelect = form.querySelector('select[name="vehicle_type"]');
             let vehicleType = vehicleTypeSelect ? vehicleTypeSelect.value : 'sedan';
 
-            // Open Paddle Checkout - send VIN/Plate and vehicle type
-            await openPaddleCheckout(vin, plate, vehicleType);
+            // Open Paddle Checkout - send VIN/Plate, vehicle type, and customer email
+            await openPaddleCheckout(vin, plate, vehicleType, customerEmail);
             return;
 
             // Old code below (kept as fallback)
@@ -994,6 +1011,10 @@ Vehicle Information:
                         <option value="4x4">4x4</option>
                     </select>
                 </div>
+                <div style="background: transparent; padding: 0; margin-bottom: 16px; position: relative; z-index: 1;">
+                    <label for="customer-email-promo" style="display: block; margin-bottom: 10px; font-size: 15px; font-weight: 500; color: var(--basic-black);">Enter Your Email:</label>
+                    <input id="customer-email-promo" name="customer_email" type="email" placeholder="Enter your email" required style="width: 100%; padding: 14px 18px; border: 2px solid #e6e6e6; border-radius: 10px; font-size: 16px; background-color: var(--basic-white); outline: none; transition: border-color 0.3s ease;" onmouseover="this.style.borderColor='var(--basic-black)'" onmouseout="this.style.borderColor='#e6e6e6'" onfocus="this.style.borderColor='var(--main-blue)'" onblur="this.style.borderColor='#e6e6e6'">
+                </div>
                 <div class="find-vin__group find-vin__group--vin">
                     <span class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--vin" data-toggle="tooltip" data-bs-trigger="manual" data-placement="bottom" title="Please, ensure that your VIN is in proper format. 5 - 17 digits">
                     </span>
@@ -1018,6 +1039,10 @@ Vehicle Information:
                         <option value="sedan" selected>Sedan</option>
                         <option value="4x4">4x4</option>
                     </select>
+                </div>
+                <div style="background: transparent; padding: 0; margin-bottom: 16px; position: relative; z-index: 1;">
+                    <label for="customer-email-plate-promo" style="display: block; margin-bottom: 10px; font-size: 15px; font-weight: 500; color: var(--basic-black);">Enter Your Email:</label>
+                    <input id="customer-email-plate-promo" name="customer_email" type="email" placeholder="Enter your email" required style="width: 100%; padding: 14px 18px; border: 2px solid #e6e6e6; border-radius: 10px; font-size: 16px; background-color: var(--basic-white); outline: none; transition: border-color 0.3s ease;" onmouseover="this.style.borderColor='var(--basic-black)'" onmouseout="this.style.borderColor='#e6e6e6'" onfocus="this.style.borderColor='var(--main-blue)'" onblur="this.style.borderColor='#e6e6e6'">
                 </div>
                 <div class="find-vin__group find-vin__group--plate">
                     <span data-toggle="tooltip" data-bs-trigger="manual" class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--plate" data-placement="bottom" title="The plate field is required."></span>
@@ -1916,6 +1941,10 @@ registration card or insurance documents.
                         <option value="4x4">4x4</option>
                     </select>
                 </div>
+                <div style="background: transparent; padding: 0; margin-bottom: 16px; position: relative; z-index: 1;">
+                    <label for="customer-email-banner" style="display: block; margin-bottom: 10px; font-size: 15px; font-weight: 500; color: var(--basic-black);">Enter Your Email:</label>
+                    <input id="customer-email-banner" name="customer_email" type="email" placeholder="Enter your email" required style="width: 100%; padding: 14px 18px; border: 2px solid #e6e6e6; border-radius: 10px; font-size: 16px; background-color: var(--basic-white); outline: none; transition: border-color 0.3s ease;" onmouseover="this.style.borderColor='var(--basic-black)'" onmouseout="this.style.borderColor='#e6e6e6'" onfocus="this.style.borderColor='var(--main-blue)'" onblur="this.style.borderColor='#e6e6e6'">
+                </div>
                 <div class="find-vin__group find-vin__group--vin">
                     <span class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--vin" data-toggle="tooltip" data-bs-trigger="manual" data-placement="bottom" title="Please, ensure that your VIN is in proper format. 5 - 17 digits">
                     </span>
@@ -1940,6 +1969,10 @@ registration card or insurance documents.
                         <option value="sedan" selected>Sedan</option>
                         <option value="4x4">4x4</option>
                     </select>
+                </div>
+                <div style="background: transparent; padding: 0; margin-bottom: 16px; position: relative; z-index: 1;">
+                    <label for="customer-email-plate-banner" style="display: block; margin-bottom: 10px; font-size: 15px; font-weight: 500; color: var(--basic-black);">Enter Your Email:</label>
+                    <input id="customer-email-plate-banner" name="customer_email" type="email" placeholder="Enter your email" required style="width: 100%; padding: 14px 18px; border: 2px solid #e6e6e6; border-radius: 10px; font-size: 16px; background-color: var(--basic-white); outline: none; transition: border-color 0.3s ease;" onmouseover="this.style.borderColor='var(--basic-black)'" onmouseout="this.style.borderColor='#e6e6e6'" onfocus="this.style.borderColor='var(--main-blue)'" onblur="this.style.borderColor='#e6e6e6'">
                 </div>
                 <div class="find-vin__group find-vin__group--plate">
                     <span data-toggle="tooltip" data-bs-trigger="manual" class="vin-form-tooltip find-vin__tooltip find-vin__tooltip--plate" data-placement="bottom" title="The plate field is required."></span>
@@ -2414,8 +2447,18 @@ registration card or insurance documents.
                         var vehicleTypeSelect = form.querySelector('select[name="vehicle_type"]');
                         var vehicleType = vehicleTypeSelect ? vehicleTypeSelect.value : 'sedan';
                         
-                        // Open Paddle Checkout with VIN and vehicle type
-                        openPaddleCheckout(vin, null, vehicleType);
+                        // Get customer email from the form - REQUIRED
+                        var emailInput = form.querySelector('input[name="customer_email"]');
+                        var customerEmail = emailInput ? emailInput.value.trim() : '';
+                        
+                        if (!customerEmail) {
+                            alert('Please enter your email address');
+                            if (emailInput) emailInput.focus();
+                            return false;
+                        }
+                        
+                        // Open Paddle Checkout with VIN, vehicle type, and customer email
+                        openPaddleCheckout(vin, null, vehicleType, customerEmail);
                         return false;
                     });
                 });
@@ -2435,6 +2478,10 @@ registration card or insurance documents.
                         var plate = plateInput ? plateInput.value.trim() : '';
                         var vehicleType = vehicleTypeSelect ? vehicleTypeSelect.value : 'sedan';
                         
+                        // Get customer email from the form - REQUIRED
+                        var emailInput = form.querySelector('input[name="customer_email"]');
+                        var customerEmail = emailInput ? emailInput.value.trim() : '';
+                        
                         if (!plate) {
                             // Show validation error
                             var plateTooltip = form.querySelector('.vin-form-tooltip--plate');
@@ -2446,8 +2493,14 @@ registration card or insurance documents.
                             return false;
                         }
                         
-                        // Open Paddle Checkout with plate and vehicle type
-                        openPaddleCheckout(null, plate, vehicleType);
+                        if (!customerEmail) {
+                            alert('Please enter your email address');
+                            if (emailInput) emailInput.focus();
+                            return false;
+                        }
+                        
+                        // Open Paddle Checkout with plate, vehicle type, and customer email
+                        openPaddleCheckout(null, plate, vehicleType, customerEmail);
                         return false;
                     });
                 });
