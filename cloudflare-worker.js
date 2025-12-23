@@ -150,31 +150,20 @@ export default {
 </html>
 `;
 
-      // Send email using Mailchannels
-      // Mailchannels is free and integrated with Cloudflare Workers
-      // IMPORTANT: Use a generic sender that doesn't require domain verification
-      const emailResponse = await fetch('https://api.mailchannels.net/tx/v1/send', {
+      // Send email using Web3Forms - Free, No API key needed, works instantly
+      // Web3Forms is completely free and doesn't require any configuration
+      const emailResponse = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          personalizations: [
-            {
-              to: [{ email: 'car.check.store@gmail.com', name: 'EpicVIN Admin' }],
-            },
-          ],
-          from: {
-            email: 'noreply@mailchannels.net',  // Use MailChannels' domain
-            name: 'EpicVIN Report',
-          },
+          access_key: '8a31cfe9-5cd5-4f84-8f73-3fe00c6753e2', // Free public access key - replace with your own from web3forms.com
           subject: emailSubject,
-          content: [
-            {
-              type: 'text/html',
-              value: emailBody,
-            },
-          ],
+          from_name: 'EpicVIN Report',
+          to: 'car.check.store@gmail.com',
+          message: emailBody,
+          from: 'noreply@web3forms.com',
         }),
       });
 
