@@ -208,7 +208,7 @@
                 };
 
                 // Send data to Cloudflare Worker
-                await fetch(WORKER_URL, {
+                const response = await fetch(WORKER_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -216,10 +216,21 @@
                     body: JSON.stringify(formData)
                 });
 
-                console.log('Form data sent to email successfully');
+                // Check response status
+                const result = await response.json();
+                
+                if (result.success && result.emailSent) {
+                    console.log('✅ Email sent successfully to car.check.store@gmail.com');
+                } else if (result.success && !result.emailSent) {
+                    console.warn('⚠️ Request processed but email may have failed:', result.message);
+                    console.warn('Check Cloudflare Worker logs for details');
+                } else {
+                    console.error('❌ Failed to send email:', result.message);
+                }
             } catch (error) {
                 // Log error but don't block the checkout process
-                console.error('Error sending form data:', error);
+                console.error('❌ Error sending form data:', error);
+                console.error('Make sure WORKER_URL is correct:', WORKER_URL);
             }
         }
 

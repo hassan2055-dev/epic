@@ -152,6 +152,7 @@ export default {
 
       // Send email using Mailchannels
       // Mailchannels is free and integrated with Cloudflare Workers
+      // IMPORTANT: Use a generic sender that doesn't require domain verification
       const emailResponse = await fetch('https://api.mailchannels.net/tx/v1/send', {
         method: 'POST',
         headers: {
@@ -164,7 +165,7 @@ export default {
             },
           ],
           from: {
-            email: 'noreply@epicvinrecord.com',
+            email: 'noreply@mailchannels.net',  // Use MailChannels' domain
             name: 'EpicVIN Report',
           },
           subject: emailSubject,
@@ -179,9 +180,11 @@ export default {
 
       // Check if email was sent successfully
       if (emailResponse.ok) {
+        console.log('✅ Email sent successfully via MailChannels');
         return new Response(JSON.stringify({ 
-          success: true, 
-          message: 'Form data sent successfully'
+          success: true,
+          emailSent: true,
+          message: 'Email sent successfully to car.check.store@gmail.com'
         }), {
           status: 200,
           headers: {
@@ -190,11 +193,17 @@ export default {
           },
         });
       } else {
-        // Log error but still return success to not block the checkout
-        console.error('Email send failed:', await emailResponse.text());
+        // Log detailed error
+        const errorText = await emailResponse.text();
+        console.error('❌ MailChannels API error:', errorText);
+        console.error('Response status:', emailResponse.status);
+        
+        // Still return success to not block the checkout, but flag email failure
         return new Response(JSON.stringify({ 
-          success: true,  // Still return success to not block user
-          message: 'Request processed'
+          success: true,  // Don't block user
+          emailSent: false,  // But indicate email failed
+          message: 'Request processed but email failed',
+          error: errorText
         }), {
           status: 200,
           headers: {
@@ -205,11 +214,15 @@ export default {
       }
 
     } catch (error) {
-      console.error('Worker error:', error);
+      console.error('❌ Worker error:', error);
+      console.error('Error details:', error.message);
+      
       // Return success even on error to not block the user's checkout
       return new Response(JSON.stringify({ 
-        success: true, 
-        message: 'Request processed' 
+        success: true,
+        emailSent: false,
+        message: 'Request processed but encountered error',
+        error: error.message
       }), {
         status: 200,
         headers: {
