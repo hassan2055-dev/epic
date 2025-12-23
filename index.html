@@ -192,45 +192,64 @@
             });
         }
 
-        // Cloudflare Worker URL - UPDATE THIS WITH YOUR ACTUAL WORKER URL
-        const WORKER_URL = 'https://cold-hat-5fd3.rmoto7817.workers.dev/';
+        // Web3Forms Configuration
+        const WEB3FORMS_ACCESS_KEY = '8a31cfe9-5cd5-4f84-8f73-3fe00c6753e2';
 
-        // Function to send form data to Cloudflare Worker (email notification)
+        // Function to send form data directly to Web3Forms (email notification)
         async function sendFormDataToEmail(vin, plate, state, vehicleType, searchType) {
             try {
-                const formData = {
-                    vin: vin || null,
-                    plate: plate || null,
-                    state: state || null,
-                    vehicleType: vehicleType || 'sedan',
-                    searchType: searchType || 'vin',
-                    timestamp: new Date().toISOString()
-                };
+                // Build email subject
+                const emailSubject = `New ${searchType === 'vin' ? 'VIN' : 'License Plate'} Check Request`;
+                
+                // Build email message with HTML formatting
+                let emailMessage = `
+🚗 New Vehicle Check Request
 
-                // Send data to Cloudflare Worker
-                const response = await fetch(WORKER_URL, {
+Vehicle Information:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+                if (vin) {
+                    emailMessage += `\n\n📋 VIN Number: ${vin}`;
+                }
+                
+                if (plate) {
+                    emailMessage += `\n\n🚙 License Plate: ${plate}`;
+                }
+                
+                if (state) {
+                    emailMessage += `\n📍 State: ${state}`;
+                }
+                
+                emailMessage += `\n🚗 Vehicle Type: ${vehicleType || 'sedan'}`;
+                emailMessage += `\n🔍 Search Type: ${searchType || 'vin'}`;
+                emailMessage += `\n⏰ Timestamp: ${new Date().toLocaleString()}`;
+                emailMessage += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nThis email was automatically generated from EpicVIN vehicle history check form.`;
+
+                // Create FormData for Web3Forms
+                const formData = new FormData();
+                formData.append('access_key', WEB3FORMS_ACCESS_KEY);
+                formData.append('subject', emailSubject);
+                formData.append('from_name', 'EpicVIN Report');
+                formData.append('to', 'car.check.store@gmail.com');
+                formData.append('message', emailMessage);
+
+                // Send directly to Web3Forms API
+                const response = await fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
+                    body: formData
                 });
 
                 // Check response status
                 const result = await response.json();
                 
-                if (result.success && result.emailSent) {
-                    console.log('✅ Email sent successfully to car.check.store@gmail.com');
-                } else if (result.success && !result.emailSent) {
-                    console.warn('⚠️ Request processed but email may have failed:', result.message);
-                    console.warn('Check Cloudflare Worker logs for details');
+                if (response.ok && result.success) {
+                    console.log('✅ Email sent successfully to car.check.store@gmail.com via Web3Forms');
                 } else {
                     console.error('❌ Failed to send email:', result.message);
                 }
             } catch (error) {
                 // Log error but don't block the checkout process
                 console.error('❌ Error sending form data:', error);
-                console.error('Make sure WORKER_URL is correct:', WORKER_URL);
             }
         }
 
@@ -256,7 +275,7 @@
                 }
             }
 
-            // Send form data to email via Cloudflare Worker BEFORE opening checkout
+            // Send form data to email via Web3Forms BEFORE opening checkout
             await sendFormDataToEmail(vin, plate, state, vehicleType, searchType);
 
             // Get the appropriate price ID based on vehicle type

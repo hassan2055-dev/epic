@@ -2,7 +2,7 @@
  * Cloudflare Worker to send form entries to email before Paddle checkout
  * 
  * This worker receives VIN/Plate form data and sends it via email
- * using Mailchannels (free email service integrated with Cloudflare Workers)
+ * using Web3Forms (free email service - no configuration needed)
  * 
  * Setup Instructions:
  * 1. Go to Cloudflare Workers dashboard
@@ -11,6 +11,9 @@
  * 4. Deploy the worker
  * 5. Get the worker URL (e.g., https://cold-hat-5fd3.rmoto7817.workers.dev/)
  * 6. Update index.html with your worker URL
+ *
+ * Web3Forms Access Key: 8a31cfe9-5cd5-4f84-8f73-3fe00c6753e2
+ * Sends to: car.check.store@gmail.com
  */
 
 export default {
@@ -150,26 +153,25 @@ export default {
 </html>
 `;
 
-      // Send email using Web3Forms - Free, No API key needed, works instantly
-      // Web3Forms is completely free and doesn't require any configuration
+      // Send email using Web3Forms - Free, No configuration needed
+      // Web3Forms is completely free and doesn't require any setup
+      const formData = new FormData();
+      formData.append('access_key', '8a31cfe9-5cd5-4f84-8f73-3fe00c6753e2');
+      formData.append('subject', emailSubject);
+      formData.append('from_name', 'EpicVIN Report');
+      formData.append('to', 'car.check.store@gmail.com');
+      formData.append('message', emailBody);
+      
       const emailResponse = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          access_key: '8a31cfe9-5cd5-4f84-8f73-3fe00c6753e2', // Free public access key - replace with your own from web3forms.com
-          subject: emailSubject,
-          from_name: 'EpicVIN Report',
-          to: 'car.check.store@gmail.com',
-          message: emailBody,
-          from: 'noreply@web3forms.com',
-        }),
+        body: formData
       });
 
       // Check if email was sent successfully
-      if (emailResponse.ok) {
-        console.log('✅ Email sent successfully via MailChannels');
+      const result = await emailResponse.json();
+      
+      if (emailResponse.ok && result.success) {
+        console.log('✅ Email sent successfully via Web3Forms to car.check.store@gmail.com');
         return new Response(JSON.stringify({ 
           success: true,
           emailSent: true,
@@ -183,9 +185,9 @@ export default {
         });
       } else {
         // Log detailed error
-        const errorText = await emailResponse.text();
-        console.error('❌ MailChannels API error:', errorText);
+        console.error('❌ Web3Forms API error:', result.message || 'Unknown error');
         console.error('Response status:', emailResponse.status);
+        console.error('Full response:', result);
         
         // Still return success to not block the checkout, but flag email failure
         return new Response(JSON.stringify({ 
