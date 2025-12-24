@@ -22,12 +22,14 @@
         <script>
                     </script>
         <meta charset="utf-8">
+    <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="format-detection" content="telephone=no">
     <!-- CSRF Token -->
     <meta name="csrf-token" content="khBtIypMkrUD4a8fhmWDEDwBzmJeQmzKR5CgIrRe">
-    <title>Free VIN Check & Vehicle History Report</title>
-    <meta name="description" content="Check your vehicle history report with EpicVIN. Get a free and reliable ⚡ VIN check about the vehicle’s history, price, damages, title records, recalls.">
+    <title>License Plate Lookup | EpicVINrecord</title>
+    <meta name="description" content="Run a license plate lookup to get vehicle details and start a vehicle history report search.">
+    <link rel="canonical" href="https://epicvinrecord.com/license-plate-lookup">
 <meta name="p:domain_verify" content="22c01edeb834b27a8d1b434c2ac47b16">
             <script type="application/ld+json">
                 {
@@ -980,28 +982,28 @@ Customer Information:
     <div class="holder">
                 <div class="home__promo-content">
             <div>
-                <p class="home__promo-slogan">Are you worried<br> about buying a used car?</p>
+                <p class="home__promo-slogan">Search by plate<br> with confidence</p>
                 <h1 class="heading heading--xxl home__promo-title">
-                    <span class="mobile">VIN Check Can Save You Thousands — Get a Full Vehicle History Report</span>
-                    <span class="desktop">VIN Check Can Save You Thousands — Get a Full Vehicle History Report</span>
+                    <span class="mobile">License Plate Lookup</span>
+                    <span class="desktop">License Plate Lookup</span>
                 </h1>
-                <p class="home__promo-text" data-find="vin">Free VIN check - find any vehicle by VIN</p>
-                <p class="home__promo-text" data-find="license-plate">Free VIN check - find any vehicle by plate</p>
+                <p class="home__promo-text" data-find="vin">Have a VIN? Run a VIN check</p>
+                <p class="home__promo-text" data-find="license-plate">Enter plate + state to start your lookup</p>
                 <div class="find-vin find-vin--main">
     <ul class="nav find-vin__toggles" role="tablist">
         <li role="presentation">
-            <button id="checkVinTabpromo" class="btn-reset find-vin__toggle active" data-toggle="pill" data-target="#checkVinPanelpromo" type="button" role="tab" aria-controls="checkVinPanelpromo" aria-selected="true">
+                <button id="checkVinTabpromo" class="btn-reset find-vin__toggle " data-toggle="pill" data-target="#checkVinPanelpromo" type="button" role="tab" aria-controls="checkVinPanelpromo" aria-selected="false">
                     by VIN
             </button>
         </li>
         <li role="presentation">
-            <button id="checkPlateTabpromo" class="btn-reset find-vin__toggle " data-toggle="pill" data-target="#checkPlatePanelpromo" type="button" role="tab" aria-controls="checkPlatePanelpromo" aria-selected="false">
+                <button id="checkPlateTabpromo" class="btn-reset find-vin__toggle active" data-toggle="pill" data-target="#checkPlatePanelpromo" type="button" role="tab" aria-controls="checkPlatePanelpromo" aria-selected="true">
                     by License Plate
             </button>
         </li>
     </ul>
     <div class="tab-content">
-        <div id="checkVinPanelpromo" class="tab-pane show active" role="tabpanel" aria-labelledby="checkVinTabpromo">
+        <div id="checkVinPanelpromo" class="tab-pane " role="tabpanel" aria-labelledby="checkVinTabpromo">
             <form class="find-vin__form find-vin__form--vin" action="/check-vin-number-and-get-the-vehicle-history-report/checkout">
                 <div style="background: transparent; padding: 0; margin-bottom: 16px; position: relative; z-index: 1;">
                     <label for="vehicle-type-promo" style="display: block; margin-bottom: 10px; font-size: 15px; font-weight: 500; color: var(--basic-black);">Select Vehicle Type:</label>
@@ -1030,7 +1032,7 @@ Customer Information:
                 </div>
             </form>
         </div>
-        <div id="checkPlatePanelpromo" class="tab-pane " role="tabpanel" aria-labelledby="checkPlateTabpromo">
+        <div id="checkPlatePanelpromo" class="tab-pane show active" role="tabpanel" aria-labelledby="checkPlateTabpromo">
             <form class="find-vin__form find-vin__form--plate">
                 <div style="background: transparent; padding: 0; margin-bottom: 16px; position: relative; z-index: 1;">
                     <label for="vehicle-type-plate-promo" style="display: block; margin-bottom: 10px; font-size: 15px; font-weight: 500; color: var(--basic-black);">Select Vehicle Type:</label>
