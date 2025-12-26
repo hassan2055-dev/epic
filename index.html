@@ -1109,6 +1109,60 @@ Customer Information:
         </div>
     </div>
 </section>
+    
+    <!-- Share Section -->
+    <section class="share-section" style="padding: 40px 0; background-color: #f8f9fa; border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e0e0e0;">
+        <div class="container holder" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <h2 style="font-size: 24px; font-weight: 600; color: var(--basic-black); margin-bottom: 8px;">Share EpicVIN</h2>
+                <p style="font-size: 16px; color: var(--dark-grey); margin: 0;">Help others protect their vehicle purchase</p>
+            </div>
+            <ul class="share-socials" style="justify-content: center;">
+                <li>
+                    <a class="share-socials__link share-socials__link--fb" href="https://www.facebook.com/sharer/sharer.php?u=https://epicvinrecord.com" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook"></a>
+                </li>
+                <li>
+                    <a class="share-socials__link share-socials__link--twitter" href="https://twitter.com/intent/tweet?url=https://epicvinrecord.com&text=Check%20your%20vehicle%20history%20with%20EpicVIN" target="_blank" rel="noopener noreferrer" aria-label="Share on Twitter"></a>
+                </li>
+                <li>
+                    <a class="share-socials__link share-socials__link--gmail" href="mailto:?subject=Check%20out%20EpicVIN&body=I%20wanted%20to%20share%20this%20great%20vehicle%20history%20service%20with%20you:%20https://epicvinrecord.com" aria-label="Share via Email"></a>
+                </li>
+                <li>
+                    <a class="share-socials__link share-socials__link--copy" href="javascript:void(0);" onclick="copyShareLink(this)" data-copy="" aria-label="Copy Link">
+                        <span style="display: inline; vertical-align: middle;">Copy Link</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </section>
+    
+    <script>
+    function copyShareLink(element) {
+        const url = 'https://epicvinrecord.com';
+        
+        // Create temporary input element
+        const tempInput = document.createElement('input');
+        tempInput.value = url;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        tempInput.setSelectionRange(0, 99999);
+        
+        try {
+            document.execCommand('copy');
+            element.setAttribute('data-copy', 'copied');
+            
+            // Reset after 2 seconds
+            setTimeout(function() {
+                element.setAttribute('data-copy', '');
+            }, 2000);
+        } catch (err) {
+            console.error('Failed to copy link:', err);
+        }
+        
+        document.body.removeChild(tempInput);
+    }
+    </script>
+    
     <div class="we-trusted">
     <div class="holder">
         <div class="we-trusted__users">
