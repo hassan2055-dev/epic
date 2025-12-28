@@ -556,13 +556,18 @@ Customer Information:
     }
     
     /* Fix "Check Now" button positioning and size */
+    .find-vin__group {
+        position: relative !important;
+        width: 100% !important;
+    }
+    
     .find-vin__check-btn,
     .button.button--main.find-vin__check-btn {
         position: absolute !important;
         right: 5px !important;
-        top: 5px !important;
-        bottom: 5px !important;
-        transform: none !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        bottom: auto !important;
         min-height: 40px !important;
         max-height: 40px !important;
         height: 40px !important;
@@ -578,6 +583,7 @@ Customer Information:
         width: auto !important;
         line-height: 1 !important;
         margin: 0 !important;
+        z-index: 10 !important;
     }
     
     /* Ensure button arrow icon is visible */
@@ -952,9 +958,6 @@ Customer Information:
         </div>
     </div>
 
-                                                                    <a class="button button--login">
-                                Login <span class="main-nav__btns-text-desctop">/ Sign up</span>
-                            </a>
                                             </div>
             </nav>
         </div>
@@ -2156,20 +2159,7 @@ registration card or insurance documents.
                         </a>
                     </li>
                 </ul>
-                <div class="subscribe-form">
-                    <p class="footer__title">Subscribe to Our Newsletter</p>
-                    <div class="sub-form">
-                        <form novalidate="">
-                            <input type="hidden" name="_token" value="khBtIypMkrUD4a8fhmWDEDwBzmJeQmzKR5CgIrRe">                            <div class="footer__field sub-form__field">
-                                <input id="subscribeEmail" class="footer__input sub-form__input" type="text" name="emale" required="">
-                                <label class="footer__label sub-form__label" for="subscribeEmail">Enter your email</label>
-                            </div>
-                            <p class="footer__err-msg sub-form__error-msg">Please enter a valid email address</p>
-                            <button class="btn-reset button button--main footer__sub-btn sub-form__button" type="submit">Subscribe</button>
-                        </form>
-                        <p class="sub-form__success-msg">You have successfully subscribed</p>
-                    </div>
-                </div>
+
             </div>
             <nav class="footer__nav" data-lang="en">
                 <div class="footer__nav-item">
@@ -2646,12 +2636,101 @@ registration card or insurance documents.
         </div>
         <script src="https://accounts.google.com/gsi/client" async=""></script>
     
-    <!--Start of Tawk.to Script-->
+    <script>
+        // Aggressive widget removal script
+        function removeCompetingWidgets() {
+            // List of selectors to look for and remove
+            const badSelectors = [
+                '[data-testid="frame"]',
+                '.chatwoot-widget-holder',
+                '.chatwoot-widget',
+                'iframe[src*="chatwoot"]',
+                'iframe[src*="crisp"]',
+                'iframe[src*="intercom"]',
+                'iframe[src*="freshchat"]',
+                '.freshchat-widget',
+                '.fcWidget',
+                '.intercom-launcher',
+                '.crisp-client',
+                'div[class*="chatwoot"]',
+                'div[id*="chatwoot"]',
+                'div[class*="support"][class*="widget"]',
+                'div[class*="chat"][class*="bubble"]',
+                'div[class*="messenger"]'
+            ];
+            
+            badSelectors.forEach(selector => {
+                try {
+                    document.querySelectorAll(selector).forEach(el => {
+                        if (el && el.parentNode && el.className && !el.className.includes('tawk')) {
+                            el.remove();
+                        }
+                    });
+                } catch(e) {}
+            });
+            
+            // Also check for any iframes that might be hidden chat widgets
+            document.querySelectorAll('iframe').forEach(iframe => {
+                try {
+                    const src = iframe.src || '';
+                    const id = iframe.id || '';
+                    const className = iframe.className || '';
+                    
+                    if (src.includes('chatwoot') || src.includes('crisp') || src.includes('intercom') ||
+                        id.includes('chatwoot') || id.includes('chat') || className.includes('chat')) {
+                        if (!src.includes('tawk')) {
+                            iframe.remove();
+                        }
+                    }
+                } catch(e) {}
+            });
+        }
+        
+        // Run immediately
+        removeCompetingWidgets();
+        
+        // Run on DOM content loaded
+        document.addEventListener('DOMContentLoaded', removeCompetingWidgets);
+        
+        // Run periodically to catch late-loading widgets
+        setInterval(removeCompetingWidgets, 500);
+        
+        // Run on visibility change
+        document.addEventListener('visibilitychange', removeCompetingWidgets);
+    </script>
     <style>
-        .tawk-button svg {
+        /* Hide Chatwoot widget and all competing chat widgets with !important */
+        [data-testid="frame"] {
             display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+        }
+        .chatwoot-widget-holder,
+        .chatwoot-widget,
+        iframe[src*="chatwoot"],
+        .fcWidget,
+        .freshchat-widget,
+        .intercom-launcher,
+        .crisp-client {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            z-index: -9999 !important;
+        }
+        /* Ensure Tawk.to stays on top */
+        #tawk-widget-container {
+            z-index: 99999 !important;
+            position: fixed !important;
+        }
+        .tawk-button {
+            z-index: 99999 !important;
+            position: fixed !important;
         }
     </style>
+    <!--Start of Tawk.to Script-->
     <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
     Tawk_API.onLoad = function(){
